@@ -19,7 +19,7 @@ public class Parser {
     void error(String s) {
 	throw new Error("near line " + lex.line + ": " + s);
     }
-
+    
     void match(int t) {
 	if (look.tag == t) {
 	    if (look.tag != Tag.EOF) move();
@@ -27,38 +27,67 @@ public class Parser {
     }
 
     public void start() {
-	// ... completare ...
-	expr();
-	match(Tag.EOF);
-	// ... completare ...
+	    if(look.tag == '(')
+            match(look.tag);
+        expr();
+        match(Tag.EOF);
     }
 
     private void expr() {
-	// ... completare ...
+        if(look.tag == '(')
+            match(look.tag);
+        term();//
+        exprp();
     }
 
     private void exprp() {
-	switch (look.tag) {
-	case '+':
-	// ... completare ...
-	}
+        switch ((char)look.tag) {
+            case '+':
+                match(look.tag);
+                term();
+                exprp();
+                break;
+            case '-':
+                match(look.tag);
+                term();
+                exprp();
+                break;  
+        }
     }
 
     private void term() {
-        // ... completare ...
+        fact();//
+        termp();
     }
 
     private void termp() {
-        // ... completare ...
+        switch ((char)look.tag) {
+            case '*':
+                match(look.tag);
+                term();
+                termp();
+                break;
+            case '/':
+                match(look.tag);
+                term();
+                termp();
+                break;  
+        }
     }
 
     private void fact() {
-        // ... completare ...
+        if(look.tag == 256){
+            match(256);
+            return;
+        }
+        else
+            expr();//
+        error("fact error");
     }
 		
     public static void main(String[] args) {
         Lexer lex = new Lexer();
-        String path = "...path..."; // il percorso del file da leggere
+        String path = "/home/pit/Desktop/prog/Lft/es 3/provaParser"; // il percorso del file da leggere
         try {
             BufferedReader br = new BufferedReader(new FileReader(path));
             Parser parser = new Parser(lex, br);
