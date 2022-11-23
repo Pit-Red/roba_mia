@@ -27,16 +27,12 @@ public class Parser {
     }
 
     public void start() {
-	    if(look.tag == '(')
-            match(look.tag);
         expr();
         match(Tag.EOF);
     }
 
     private void expr() {
-        if(look.tag == '(')
-            match(look.tag);
-        term();//
+        term();
         exprp();
     }
 
@@ -56,7 +52,7 @@ public class Parser {
     }
 
     private void term() {
-        fact();//
+        fact();
         termp();
     }
 
@@ -76,18 +72,22 @@ public class Parser {
     }
 
     private void fact() {
-        if(look.tag == 256){
-            match(256);
-            return;
+        switch(look.tag){
+            case '(':
+                match('(');
+                expr();
+                match(')');
+                break;
+            default:
+                match(256);
+                break;
         }
-        else
-            expr();//
-        error("fact error");
     }
+
 		
     public static void main(String[] args) {
         Lexer lex = new Lexer();
-        String path = "/home/pit/Desktop/prog/Lft/es 3/provaParser"; // il percorso del file da leggere
+        String path = "/home/pit/Scrivania/prog/LFT/es 3/provaParser"; // il percorso del file da leggere
         try {
             BufferedReader br = new BufferedReader(new FileReader(path));
             Parser parser = new Parser(lex, br);
