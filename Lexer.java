@@ -14,7 +14,7 @@ public class Lexer {
         } catch (IOException exc) {
             peek = (char) -1; // ERROR
         }
-    }
+    }/*susu*/
 
     private Token isWord(String s){
         switch(s){
