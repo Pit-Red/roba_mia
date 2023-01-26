@@ -82,7 +82,7 @@ public class Lexer {
         if(peek=='*'){
             readch(br);
             if(peek=='/'){
-                readch(br);
+                //readch(br);
                 comment_type = ' ';
                 return true;
             }
@@ -298,7 +298,7 @@ public class Lexer {
 		
     public static void main(String[] args) {
         Lexer lex = new Lexer();
-        String path = "/home/pit/Desktop/prog/Lft/es 3/provaParser"; // il percorso del file da leggere
+        String path = "/home/pit/Scrivania/prog/LFT/es 2/dio2"; // il percorso del file da leggere
         try {            
             BufferedReader br = new BufferedReader(new FileReader(path));
             Token tok;
