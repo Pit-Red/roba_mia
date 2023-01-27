@@ -1,13 +1,13 @@
 import java.io.*;
 import java.util.List;
 
-import javax.swing.text.html.HTML.Tag;
+//import javax.swing.text.html.HTML.Tag;
 
 public class Translator {
     private Lexer lex;
     private BufferedReader pbr;
     private Token look;
-    
+
     SymbolTable st = new SymbolTable();
     CodeGenerator code = new CodeGenerator();
     int count=0;
@@ -44,52 +44,55 @@ public class Translator {
         catch(java.io.IOException e) {
         	System.out.println("IO error\n");
         };
-	// ... completare ...
     }
 
     public void statlist(int line){
-        if(look.tag == ';'){
-            match(';');
+        stat(line);
+        match(';');
+        if(look.tag == Tag.ASSIGN || look.tag == Tag.PRINT || look.tag == Tag.READ
+             || look.tag == Tag.WHILE || look.tag == Tag.COND){
             line = code.newLabel();
-            //code.emitLabel(line);
-            stat(line);
+            code.emitLabel(line);
+            statlist(line);
         }
     }
+
 
     public void stat(int line) {
         switch(look.tag) {
             case Tag.ASSIGN:
                 match(look.tag);
-                expr(line);
+                expr();
                 match(Tag.TO);
-                idlist(line);
+                idlist('i');
                 break;
             case Tag.PRINT:
                 match(look.tag);
                 match('[');
-                idlist(line);
-                code.emit(opCode.invokestatic, 1);
+                idlist('o');
                 match(']');
+                code.emit(OpCode.invokestatic, 1);
                 break;
             case Tag.READ:
                 match(look.tag);
                 match('[');
-	            idlist(line);
+	            idlist('i');
                 match(']');
+                code.emit(OpCode.invokestatic, 0);
                 break;
             case Tag.WHILE:
                 match(look.tag);
                 match('(');
-                bexpr(line);
+                //bexpr();
                 match(')');
                 stat(line);
                 break;
             case Tag.COND:
                 match(look.tag);
                 match('[');
-                optlist(line);
+                //optlist();
                 match(']');
-                stat_();
+                stat_(line);
                 break;
             case '{':
                 match('{');
@@ -113,20 +116,39 @@ public class Translator {
     }
 
 
-    private void idlist(int line) {
-        switch(look.tag) {
-	    case Tag.ID:
-        	int id_addr = st.lookupAddress(((Word)look).lexeme);
+    private void idlist(char operation) {
+        switch(look.tag){
+            case Tag.ID:
+                int id_addr = st.lookupAddress(((Word)look).lexeme);
                 if (id_addr==-1) {
                     id_addr = count;
                     st.insert(((Word)look).lexeme,count++);
                 }
+                code.emit(OpCode.ldc, id_addr);
                 match(Tag.ID);
-	// ... completare ...
-    	}
+                idlistp();
+                break;
+            case Tag.NUM:
+                
+                break;
+        }
     }
 
-    private void expr(int line) {
+    private void idlistp(){
+        if(look.tag == ','){
+            match(',');
+            int id_addr = st.lookupAddress(((Word)look).lexeme);
+            if (id_addr==-1) {
+                id_addr = count;
+                st.insert(((Word)look).lexeme,count++);
+            }
+            code.emit(OpCode.ldc, id_addr);
+            match(Tag.ID);
+            idlistp();
+        }
+    }
+
+    private void expr() {
         switch(look.tag) {
             case '+':
                 match('+');
@@ -152,20 +174,40 @@ public class Translator {
                 match('/');
                 expr();
                 expr();
-                code.emit(OpCode.idiv)
+                code.emit(OpCode.idiv);
                 break;
             case Tag.NUM:
-                code.emit(opCode.ldc, NumberTok.valore);
-                match(Tag.NUM)
+                code.emit(OpCode.ldc, NumberTok.valore);
+                match(Tag.NUM);
                 break;
             case Tag.ID:
-                code.emit()
+                code.emit(OpCode.iload, st.lookupAddress(((Word)look).lexeme));
                 break;
-	// ... completare ...
         }
     }
 
     private void exprlist(){
-
+        expr();
+        exprlistp();
     }
+
+    private void exprlistp(){
+        if(look.tag == ','){
+            match(',');
+            expr();
+            exprlistp();
+        }
+    }
+    public static void main(String[] args) {
+        Lexer lex = new Lexer();
+        String path = "/home/pit/Desktop/prog/java/LFT/prova.lft"; // il percorso del file da leggere
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(path));
+            Translator trans = new Translator(lex, br);
+            trans.prog();
+            System.out.println("Input OK");
+            br.close();
+        } catch (IOException e) {e.printStackTrace();}
+    }
+    
 }
